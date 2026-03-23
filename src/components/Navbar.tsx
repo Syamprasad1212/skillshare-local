@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X, Zap, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "Discover", path: "/discover" },
@@ -13,6 +14,13 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <motion.nav
@@ -43,8 +51,21 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="ghost" size="sm">Log In</Button>
-          <Button size="sm">Get Started</Button>
+          {user ? (
+            <>
+              <Link to="/profile">
+                <Button variant="ghost" size="sm">Dashboard</Button>
+              </Link>
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
+                <LogOut className="h-3.5 w-3.5" /> Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/auth"><Button variant="ghost" size="sm">Log In</Button></Link>
+              <Link to="/auth"><Button size="sm">Get Started</Button></Link>
+            </>
+          )}
         </div>
 
         <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
@@ -69,7 +90,15 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
-            <Button size="sm" className="mt-2 w-full">Get Started</Button>
+            {user ? (
+              <Button size="sm" variant="outline" onClick={handleSignOut} className="mt-2 w-full gap-2">
+                <LogOut className="h-3.5 w-3.5" /> Sign Out
+              </Button>
+            ) : (
+              <Link to="/auth" onClick={() => setIsOpen(false)}>
+                <Button size="sm" className="mt-2 w-full">Get Started</Button>
+              </Link>
+            )}
           </div>
         </motion.div>
       )}
