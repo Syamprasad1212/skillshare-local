@@ -68,6 +68,45 @@ export type Database = {
         }
         Relationships: []
       }
+      swap_requests: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          message: string
+          receiver_id: string
+          requester_id: string
+          skill_offered: string
+          skill_requested: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number
+          id?: string
+          message?: string
+          receiver_id: string
+          requester_id: string
+          skill_offered?: string
+          skill_requested?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          message?: string
+          receiver_id?: string
+          requester_id?: string
+          skill_offered?: string
+          skill_requested?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
