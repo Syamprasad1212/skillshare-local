@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Wallet, ArrowUpRight, ArrowDownLeft, Star, MapPin, Clock, Edit, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import MySkillsSection from "@/components/MySkillsSection";
 
 const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,15 +31,14 @@ const Profile = () => {
     fetchProfile();
   }, [user]);
 
-  if (authLoading) return null;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user || !profile) {
 
   if (loading || !profile) {
     return (
       <div className="min-h-screen">
         <Navbar />
-        <div className="flex items-center justify-center pt-32">
-          <p className="text-muted-foreground">Loading dashboard...</p>
+        <div className="flex flex-col items-center justify-center pt-32 gap-4">
+          <p className="text-muted-foreground">{loading ? "Loading dashboard..." : "No profile found. Please sign up first."}</p>
         </div>
       </div>
     );
