@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ALTER COLUMN wallet_balance SET DEFAULT 3;
