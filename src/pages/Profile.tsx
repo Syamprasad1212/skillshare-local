@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import MySkillsSection from "@/components/MySkillsSection";
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
@@ -104,24 +105,7 @@ const Profile = () => {
             {/* Skills */}
             <div className="rounded-xl border border-border bg-card p-6 shadow-card">
               <h2 className="mb-4 font-display text-lg font-semibold text-foreground">My Skills</h2>
-              {profile.skills_offered.length === 0 && profile.skills_requested.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No skills added yet. <Link to="/profile/settings" className="text-primary hover:underline">Add some!</Link></p>
-              ) : (
-                <div className="space-y-3">
-                  {profile.skills_offered.map(skill => (
-                    <div key={skill} className="flex items-center gap-3">
-                      <Badge className="w-16 justify-center text-xs">Teach</Badge>
-                      <span className="text-sm font-medium text-foreground">{skill}</span>
-                    </div>
-                  ))}
-                  {profile.skills_requested.map(skill => (
-                    <div key={skill} className="flex items-center gap-3">
-                      <Badge variant="outline" className="w-16 justify-center text-xs">Learn</Badge>
-                      <span className="text-sm font-medium text-foreground">{skill}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <MySkillsSection />
             </div>
 
             {/* Availability */}
