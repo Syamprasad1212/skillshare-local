@@ -181,6 +181,9 @@ const Discover = () => {
                       </p>
                     </div>
                   </div>
+                  {profile.matchScore >= 2 && (
+                    <Badge className="bg-secondary text-secondary-foreground text-xs">Best Match</Badge>
+                  )}
                 </div>
 
                 <div className="mb-4 flex flex-wrap gap-2">
