@@ -25,6 +25,8 @@ interface ProfileUser {
   location: string;
   availability: string;
   bio: string;
+  // Enriched from user_skills table
+  detailedSkills?: { skill_name: string; skill_type: string; category: string; level: string }[];
 }
 
 const Discover = () => {
@@ -41,12 +43,21 @@ const Discover = () => {
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      const { data, error } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("id, user_id, full_name, skills_offered, skills_requested, rating, hourly_credit_rate, location, availability, bio");
-      if (!error && data) {
-        // Exclude current user
-        setProfiles(data.filter(p => p.user_id !== user?.id));
+      const { data: skillsData } = await supabase
+        .from("user_skills")
+        .select("user_id, skill_name, skill_type, category, level");
+      
+      if (profileData) {
+        const enriched = profileData
+          .filter(p => p.user_id !== user?.id)
+          .map(p => ({
+            ...p,
+            detailedSkills: (skillsData || []).filter(s => s.user_id === p.user_id),
+          }));
+        setProfiles(enriched);
       }
       setLoading(false);
     };
@@ -72,23 +83,31 @@ const Discover = () => {
   const getMatchScore = (profile: ProfileUser): number => {
     if (!myProfile) return 0;
     let score = 0;
-    // They teach what I want to learn
+    // Legacy profile arrays
     for (const skill of profile.skills_offered) {
       if (myProfile.skills_requested.some(s => s.toLowerCase() === skill.toLowerCase())) score += 2;
     }
-    // I teach what they want to learn
     for (const skill of profile.skills_requested) {
       if (myProfile.skills_offered.some(s => s.toLowerCase() === skill.toLowerCase())) score += 1;
     }
+    // Also check user_skills table entries
+    const theirTeach = (profile.detailedSkills || []).filter(s => s.skill_type === "teach").map(s => s.skill_name.toLowerCase());
+    const theirLearn = (profile.detailedSkills || []).filter(s => s.skill_type === "learn").map(s => s.skill_name.toLowerCase());
+    const myTeach = (myProfile as any).detailedSkills?.filter((s: any) => s.skill_type === "teach").map((s: any) => s.skill_name.toLowerCase()) || [];
+    const myLearn = (myProfile as any).detailedSkills?.filter((s: any) => s.skill_type === "learn").map((s: any) => s.skill_name.toLowerCase()) || [];
+    for (const s of theirTeach) { if (myLearn.includes(s)) score += 2; }
+    for (const s of theirLearn) { if (myTeach.includes(s)) score += 1; }
     return score;
   };
 
   const filtered = profiles
-    .filter(u =>
-      u.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      u.skills_offered.some(s => s.toLowerCase().includes(search.toLowerCase())) ||
-      u.skills_requested.some(s => s.toLowerCase().includes(search.toLowerCase()))
-    )
+    .filter(u => {
+      const q = search.toLowerCase();
+      return u.full_name.toLowerCase().includes(q) ||
+        u.skills_offered.some(s => s.toLowerCase().includes(q)) ||
+        u.skills_requested.some(s => s.toLowerCase().includes(q)) ||
+        (u.detailedSkills || []).some(s => s.skill_name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+    })
     .map(p => ({ ...p, matchScore: getMatchScore(p) }))
     .sort((a, b) => b.matchScore - a.matchScore);
 
@@ -189,6 +208,9 @@ const Discover = () => {
                 <div className="mb-4 flex flex-wrap gap-2">
                   {profile.skills_offered.slice(0, 3).map(tag => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                  ))}
+                  {(profile.detailedSkills || []).filter(s => s.skill_type === "teach").slice(0, 3).map(s => (
+                    <Badge key={s.skill_name} variant="secondary" className="text-xs">{s.skill_name} · {s.level}</Badge>
                   ))}
                 </div>
 
