@@ -107,6 +107,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_skills: {
+        Row: {
+          availability: string
+          category: string
+          created_at: string
+          id: string
+          level: string
+          skill_name: string
+          skill_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability?: string
+          category?: string
+          created_at?: string
+          id?: string
+          level?: string
+          skill_name?: string
+          skill_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: string
+          category?: string
+          created_at?: string
+          id?: string
+          level?: string
+          skill_name?: string
+          skill_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
