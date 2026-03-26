@@ -53,11 +53,44 @@ const Discover = () => {
     fetchProfiles();
   }, [user]);
 
-  const filtered = profiles.filter(u =>
-    u.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    u.skills_offered.some(s => s.toLowerCase().includes(search.toLowerCase())) ||
-    u.skills_requested.some(s => s.toLowerCase().includes(search.toLowerCase()))
-  );
+  // Current user's profile for matching
+  const [myProfile, setMyProfile] = useState<ProfileUser | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchMyProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, user_id, full_name, skills_offered, skills_requested, rating, hourly_credit_rate, location, availability, bio")
+        .eq("user_id", user.id)
+        .single();
+      if (data) setMyProfile(data);
+    };
+    fetchMyProfile();
+  }, [user]);
+
+  const getMatchScore = (profile: ProfileUser): number => {
+    if (!myProfile) return 0;
+    let score = 0;
+    // They teach what I want to learn
+    for (const skill of profile.skills_offered) {
+      if (myProfile.skills_requested.some(s => s.toLowerCase() === skill.toLowerCase())) score += 2;
+    }
+    // I teach what they want to learn
+    for (const skill of profile.skills_requested) {
+      if (myProfile.skills_offered.some(s => s.toLowerCase() === skill.toLowerCase())) score += 1;
+    }
+    return score;
+  };
+
+  const filtered = profiles
+    .filter(u =>
+      u.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      u.skills_offered.some(s => s.toLowerCase().includes(search.toLowerCase())) ||
+      u.skills_requested.some(s => s.toLowerCase().includes(search.toLowerCase()))
+    )
+    .map(p => ({ ...p, matchScore: getMatchScore(p) }))
+    .sort((a, b) => b.matchScore - a.matchScore);
 
   const handleRequestSwap = (profile: ProfileUser) => {
     if (!user) {
