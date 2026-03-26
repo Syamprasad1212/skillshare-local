@@ -31,8 +31,6 @@ const Profile = () => {
     fetchProfile();
   }, [user]);
 
-  if (!user || !profile) {
-
   if (loading || !profile) {
     return (
       <div className="min-h-screen">
